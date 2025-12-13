@@ -1,12 +1,9 @@
 package com.lumitechsystems.smart_gas_monitoring_system.service;
 
-
-
-
-
 import com.lumitechsystems.smart_gas_monitoring_system.entity.CylinderData;
 import com.lumitechsystems.smart_gas_monitoring_system.repository.CylinderDataRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class CylinderDataService {
 
-    @Autowired
-    private CylinderDataRepository cylinderDataRepository;
+    private final CylinderDataRepository cylinderDataRepository;
 
     public CylinderData saveReading(CylinderData cylinderData) {
         return cylinderDataRepository.save(cylinderData);
@@ -62,6 +60,6 @@ public class CylinderDataService {
     public void cleanupOldRecords() {
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
         cylinderDataRepository.deleteOldRecords(thirtyDaysAgo);
-        System.out.println("Cleaned up records older than: " + thirtyDaysAgo);
+        log.info("Cleaned up records older than: {}", thirtyDaysAgo);
     }
 }
