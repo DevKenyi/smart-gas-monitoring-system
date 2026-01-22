@@ -1,14 +1,28 @@
-# Use Eclipse Temurin Java 17
-FROM eclipse-temurin:17-jdk-jammy
-
-# Set working directory
+# ---------- Build stage ----------
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Copy the Spring Boot fat JAR
-COPY target/smart-gas-monitoring-system-0.0.1-SNAPSHOT.jar app.jar
+# Copy Maven files first (better caching)
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn .mvn
+RUN chmod +x mvnw
 
-# Expose port 8080
+# Download dependencies
+RUN ./mvnw dependency:go-offline
+
+# Copy source code
+COPY src ./src
+
+# Build the application
+RUN ./mvnw clean package -DskipTests
+
+# ---------- Runtime stage ----------
+FROM eclipse-temurin:17-jdk-jammy
+WORKDIR /app
+
+# Copy the built JAR from build stage
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 8080
-
-# Run the JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]
